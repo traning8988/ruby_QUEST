@@ -63,7 +63,7 @@ class Player
   end
 
   def push_card
-    @front_card = @have.shift
+    @front_card.unshift(@have.shift)
   end
 
   def maximum(*players)
@@ -89,10 +89,30 @@ class Game
   end
 
   def compare_cards
+    puts "戦争！"
     #出したカードの出力
     @players.each do |player|
       player.push_card
-      puts "#{player.name}のカードは#{player.front_card.full_name}です。"
+      puts "#{player.name}のカードは#{player.front_card.first.full_name}です。"
+    end
+
+  end
+
+  def war_result
+    #勝敗の決定
+    highest_value = @players.max_by{ |player| player.front_card.first.value }
+    highest_players = @players.select{ |player| player.front_card.first.value == highest_value.front_card.first.value }
+    if highest_players.size == 1
+      puts "#{highest_value.name}が勝ちました。"
+      #相手と自分のfront_cardとデッキストレイジを手元に置く
+      #相手の手元にあったカードの枚数と相手がデッキストレイジに送った枚数を出力する
+    else
+      puts "引き分けです。"
+      compare_cards
+      war_result
+      #@players.map { |player| @deck.storage << player.front_card }
+      #それぞれの手元に置く
+      #メソッドを切り出して繰り返す
     end
   end
 
@@ -101,28 +121,16 @@ class Game
     puts "戦争を開始します。"
     @deck.distribute(*@players)
     puts "カードが配られました。"
-    puts "戦争！"
 
     compare_cards
-    #if @players.map{ |player| player }
-    #勝敗の決定
-    highest_value = @players.max_by{ |player| player.front_card.value }
-    highest_players = @players.select{ |player| player.front_card.value == highest_value.front_card.value }
-      if highest_players.size == 1
-        puts "#{highest_value.name}が勝ちました。"
-        #相手と自分のfront_cardとデッキストレイジを手元に置く
-        #相手の手元にあったカードの枚数と相手がデッキストレイジに送った枚数を出力する
-      else
-        #@players.map { |player| @deck.storage << player.front_card }
-        それぞれの手元に置く
-        メソッドを切り出して繰り返す
-      end
-      #@players.each do |player|
-      # highest_value.have << player.front_card
-      # highest_value.have << @deck.storage if @deck.storage.any?
-    end
+
+    war_result
+    #@players.each do |player|
+    # highest_value.have << player.front_card
+    # highest_value.have << @deck.storage if @deck.storage.any?１
+    puts "戦争を終了します。"
   end
 end
 
-game = Game.new("プレイヤー１", "プレイヤー２")
+game = Game.new("プレイヤー１", "プレイヤー２","プレイヤー３")
 game.start
