@@ -28,10 +28,9 @@ end
 # puts card.full_name
 
 class Deck
-  attr_accessor :cards, :storage
+  attr_accessor :cards
   def initialize
     @cards = []
-    @storage = []
     numbers = (2..10).to_a + ["A", "J", "Q", "K"]
     marks = ["ハート", "スペード", "ダイヤ", "クローバー"]
     marks.each do |mark|
@@ -55,29 +54,18 @@ end
 # puts deck.cards.size
 
 class Player
-  attr_accessor :name, :have, :front_card
+  attr_accessor :name, :have, :front_card, :storage
   def initialize(name)
     @name = name
     @have = []
     @front_card = []
+    @storage = []
   end
 
   def push_card
     @front_card.unshift(@have.shift)
   end
-
-  def maximum(*players)
-    @players.each do |player|
-      @storage << player.front_card.num
-    end
-    puts @storage
-  end
 end
-# player1 = Player.new("田中")
-# player2 = Player.new("佐藤")
-# puts player1.name
-# deck.distribute(player1,player2)
-# puts player1.have.size
 
 
 class Game
@@ -95,42 +83,65 @@ class Game
       player.push_card
       puts "#{player.name}のカードは#{player.front_card.first.full_name}です。"
     end
-
+  end
+  #勝敗決定後のカードの受け渡し枚数
+  def deliver_count
+    @players.first.front_card.length * (@players.length - 1)
+  end
+  def replenishment
+    @players.each do |player|
+      if player.have.empty? && player.storage.any?
+        player.have << player.storage.shuffle!
+      end
+    end
   end
 
+  def end_game
+    @players.each do |player|
+      if player.have.empty? && player.storage.empty?
+        puts "#{player.name}の手札がなくなりました。"
+        final_result
+      end
+    end
+  end
   def war_result
     #勝敗の決定
     highest_value = @players.max_by{ |player| player.front_card.first.value }
     highest_players = @players.select{ |player| player.front_card.first.value == highest_value.front_card.first.value }
     if highest_players.size == 1
-      puts "#{highest_value.name}が勝ちました。"
-      #相手と自分のfront_cardとデッキストレイジを手元に置く
-      #相手の手元にあったカードの枚数と相手がデッキストレイジに送った枚数を出力する
+
+      puts "#{highest_value.name}が勝ちました。#{highest_value.name}はカードを#{deliver_count}枚もらいました。"
+
+      #勝ったプレイヤーのstorageに入れる
+      highest_value.storage << @players.map { |player| player.front_card }
     else
       puts "引き分けです。"
-      compare_cards
-      war_result
-      #@players.map { |player| @deck.storage << player.front_card }
-      #それぞれの手元に置く
-      #メソッドを切り出して繰り返す
+      if @players.map { |player| player.front_card }
+        replenishment
+        end_game
+        compare_cards
+        war_result
+      end
     end
+  end
+  def final_result
+    puts "戦争を終了します。"
   end
 
   #ゲームスタート
   def start
-    puts "戦争を開始します。"
     @deck.distribute(*@players)
-    puts "カードが配られました。"
-
-    compare_cards
-
-    war_result
-    #@players.each do |player|
-    # highest_value.have << player.front_card
-    # highest_value.have << @deck.storage if @deck.storage.any?１
-    puts "戦争を終了します。"
+    loop do
+      puts "戦争を開始します。"
+      puts "カードが配られました。"
+      replenishment
+      end_game
+      compare_cards
+      war_result
+    end
   end
 end
 
 game = Game.new("プレイヤー１", "プレイヤー２","プレイヤー３")
 game.start
+#誰かの手札がなくなったらゲーム終了し、順位を表示するようにしましょう。この時点での手札の枚数が多い順に1位、2位を出力する
