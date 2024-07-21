@@ -1,6 +1,3 @@
-# encoding: UTF-8
-require "debug"
-
 class Card
   attr_accessor :num, :mark
   def initialize(num, mark)
@@ -138,11 +135,9 @@ class Game
   def final_result
     liquidation
     @players.map do |player|
-      final_card_count = player.have + player.storage
       puts "#{player.name}の手札がなくなりました。" if player.have.empty?
     end
     @players.map do |player|
-      final_card_count = player.have + player.storage
       print "#{player.name}の手札の枚数は#{player.have.length}枚です。"
     end
     puts"\n"
@@ -153,11 +148,8 @@ class Game
 
   #ゲームスタート
   def start
-    # binding.break
     @deck.distribute(*@players)
     until end_game do
-      puts "戦争を開始します。"
-      puts "カードが配られました。"
       compare_cards
       war_result
       replenishment
@@ -167,6 +159,8 @@ class Game
   end
 end
 
-game = Game.new("プレイヤー１", "プレイヤー２")
+puts "戦争を開始します。"
+puts "カードが配られました。"
+game = Game.new("プレイヤー１", "プレイヤー２", "プレイヤー３")
 game.start
 #誰かの手札がなくなったらゲーム終了し、順位を表示するようにしましょう。この時点での手札の枚数が多い順に1位、2位を出力する
