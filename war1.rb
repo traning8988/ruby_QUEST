@@ -24,9 +24,6 @@ class Card
   end
 end
 
-# card = Card.new("2", "ハート")
-# puts card.full_name
-
 class Deck
   attr_accessor :cards
   def initialize
@@ -49,9 +46,6 @@ class Deck
     end
   end
 end
-
-# deck = Deck.new
-# puts deck.cards.size
 
 class Player
   attr_accessor :name, :have, :front_card, :storage
@@ -131,7 +125,7 @@ class Game
       print "#{player.name}が#{index + 1}位です。"
     end
   end
-
+  #誰かの手札がなくなったらゲーム終了し、順位を表示するようにする。この時点での手札の枚数が多い順に1位、2位を出力する。
   def final_result
     liquidation
     @players.map do |player|
@@ -157,10 +151,25 @@ class Game
     end
     final_result
   end
+  #ゲームスタート時のセットアップ
 end
-
+def set_up
+  print "プレイヤーの人数を入力してください（2〜5）: "
+  n = gets.chomp.to_i
+  if n.between?(2,5)
+    @players = []
+    n.times do |i|
+      print "プレイヤー#{i + 1}の名前を入力してください: "
+      player = gets.chomp.to_s
+      @players << player
+    end
+  else
+    puts "2~5の数字を入力してください。"
+    set_up
+  end
+end
 puts "戦争を開始します。"
+set_up
 puts "カードが配られました。"
-game = Game.new("プレイヤー１", "プレイヤー２", "プレイヤー３")
+game = Game.new(*@players)
 game.start
-#誰かの手札がなくなったらゲーム終了し、順位を表示するようにしましょう。この時点での手札の枚数が多い順に1位、2位を出力する
