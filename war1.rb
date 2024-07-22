@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Card
   attr_accessor :num, :mark
   def initialize(num, mark)
@@ -10,7 +12,7 @@ class Card
   end
 
   def number
-    "#{num}"
+    num.to_s
   end
 
   def value
@@ -23,9 +25,6 @@ class Card
     end
   end
 end
-
-# card = Card.new("2", "ハート")
-# puts card.full_name
 
 class Deck
   attr_accessor :cards
@@ -50,9 +49,6 @@ class Deck
   end
 end
 
-# deck = Deck.new
-# puts deck.cards.size
-
 class Player
   attr_accessor :name, :have, :front_card, :storage
   def initialize(name)
@@ -69,22 +65,22 @@ end
 
 
 class Game
-  #プレイヤーを定義
-  #デッキの準備
+  # プレイヤーを定義
+  # デッキの準備
   def initialize(*player_names)
-    @players = player_names.map{ |name| Player.new(name) }
+    @players = player_names.map { |name| Player.new(name) }
     @deck = Deck.new
   end
 
   def compare_cards
     puts "戦争！"
-    #出したカードの出力
+    # 出したカードの出力
     @players.each do |player|
       player.push_card
       puts "#{player.name}のカードは#{player.front_card.first.full_name}です。"
     end
   end
-  #勝敗決定後のカードの受け渡し枚数
+  # 勝敗決定後のカードの受け渡し枚数
   def deliver_count
     @players.first.front_card.length * (@players.length - 1)
   end
@@ -110,14 +106,14 @@ class Game
   end
 
   def war_result
-    #勝敗の決定
-    highest_value = @players.max_by{ |player| player.front_card.first.value }
-    highest_players = @players.select{ |player| player.front_card.first.value == highest_value.front_card.first.value }
+    # 勝敗の決定
+    highest_value = @players.max_by { |player| player.front_card.first.value }
+    highest_players = @players.select { |player| player.front_card.first.value == highest_value.front_card.first.value }
     if highest_players.size == 1
 
       puts "#{highest_value.name}が勝ちました。#{highest_value.name}はカードを#{deliver_count}枚もらいました。"
-      #勝ったプレイヤーのstorageに入れる
-      highest_value.storage.concat(@players.flat_map { |player| player.front_card })
+      # 勝ったプレイヤーのstorageに入れる
+      highest_value.storage.concat(@players.flat_map(&:front_card))
       @players.map { |player| player.front_card.clear }
 
     else
@@ -131,7 +127,7 @@ class Game
       print "#{player.name}が#{index + 1}位です。"
     end
   end
-
+  # 誰かの手札がなくなったらゲーム終了し、順位を表示するようにする。この時点での手札の枚数が多い順に1位、2位を出力する。
   def final_result
     liquidation
     @players.map do |player|
@@ -140,13 +136,13 @@ class Game
     @players.map do |player|
       print "#{player.name}の手札の枚数は#{player.have.length}枚です。"
     end
-    puts"\n"
+    puts "\n"
     ranking
-    puts"\n"
+    puts "\n"
     puts "戦争を終了します。"
   end
 
-  #ゲームスタート
+  # ゲームスタート
   def start
     @deck.distribute(*@players)
     until end_game do
@@ -157,10 +153,25 @@ class Game
     end
     final_result
   end
+  # ゲームスタート時のセットアップ
 end
-
+def set_up
+  print "プレイヤーの人数を入力してください（2〜5）: "
+  n = gets.chomp.to_i
+  if n.between?(2, 5)
+    @players = []
+    n.times do |i|
+      print "プレイヤー#{i + 1}の名前を入力してください: "
+      player = gets.chomp.to_s
+      @players << player
+    end
+  else
+    puts "2~5の数字を入力してください。"
+    set_up
+  end
+end
 puts "戦争を開始します。"
+set_up
 puts "カードが配られました。"
-game = Game.new("プレイヤー１", "プレイヤー２", "プレイヤー３")
+game = Game.new(*@players)
 game.start
-#誰かの手札がなくなったらゲーム終了し、順位を表示するようにしましょう。この時点での手札の枚数が多い順に1位、2位を出力する
